@@ -1,0 +1,70 @@
+# =========================
+# 🔹 Django
+# =========================
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+*.pot
+*.pyc
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Django secrets
+.env
+*.env
+
+# Migrations (tuỳ chọn - thường KHÔNG ignore)
+# */migrations/__pycache__/
+
+# Static / media (nếu bạn không muốn push file build)
+staticfiles/
+media/
+
+# =========================
+# 🔹 React / Node
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+dist/
+build/
+
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# =========================
+# 🔹 TypeScript
+# =========================
+*.tsbuildinfo
+
+# =========================
+# 🔹 IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# 🔹 OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# 🔹 Python cache
+# =========================
+*.pyo
+*.pyd
