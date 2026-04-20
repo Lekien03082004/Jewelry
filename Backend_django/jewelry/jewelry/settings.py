@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+# from .base import *
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'reviews',
     'wishlist',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
@@ -127,17 +129,51 @@ USE_TZ = True
 
 AUTH_USER_MODEL = 'account.CustomerUser'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
 CORS_ORIGIN_ALLOW_ALL = True
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'account.middleware.authentication.CookieJWTAuthentication',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        # Một user chỉ được gọi API có scope logout tối đa 5 lần mỗi phút
+        'anon': '100/day',
+        'user': '1000/day',
+        'logout': '5/minute',  # hoặc tuỳ bạn
+    }
 }
+
+# SECURITY (tắt bớt)
+SECURE_SSL_REDIRECT = False
+
+SECURE_HSTS_SECONDS = 0 #31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
+
+
+# COOKIE (cho phép HTTP)
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+# quan trọng: KHÔNG set domain ở local
+COOKIE_DOMAIN = None #'.yourdomain.com'  # Cho phép subdomains
+
+# dùng Lax là ổn
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+# Custom JWT Cookie Paths
+ACCESS_TOKEN_COOKIE_PATH = '/'
+REFRESH_TOKEN_COOKIE_PATH = '/api/auth/refresh'
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+REDIS_CLIENT=None
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
