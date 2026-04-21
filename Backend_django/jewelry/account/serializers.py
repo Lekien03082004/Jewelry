@@ -10,48 +10,51 @@ class RegisterSerializer(serializers.ModelSerializer):
     
     class Meta:
         model=CustomerUser
-        fields=['username','first_name','last_name', 'email', 'password', 'confirm_password']
+        fields=['username','first_name','last_name', 'email','phone_number', 'password', 'confirm_password']
         
-        def validate(self, data):
-            password = data.get('password')
-            confirm_password = data.get('confirm_password')
-            
-            if password != confirm_password:
-                raise serializers.ValidationError("Passwords do not match")
-            
-            validate_password(password)
-            
-            return data
+    def validate_email(self, value):
+        if not value:
+            raise serializers.ValidationError("Email is required")
+
+        if CustomerUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email already exists")
+
+        return value
+    def validate_phone_number(self, value):
+        if not value:
+            raise serializers.ValidationError("PHone number is required")
+        if CustomerUser.objects.filter(phone_number=value).exists():
+            raise serializers.ValidationError("Phone number already exists")
         
-        def create(self, validated_data):
-            
-            validated_data.pop("confirm_password")
-            
-            user = CustomerUser(
-                username=validated_data["username"],
-                first_name=validated_data["first_name"],
-                last_name=validated_data["last_name"],
-                email=validated_data.get("email", "")
-            )
-            
-            user.set_password(validated_data["password"]) #hassh password
-            user.save()
-            return user
+        return value
+    
+    def validate(self, data):
+        
+        if data['password'] != data['confirm_password']:
+            raise serializers.ValidationError({"confirm_password":"Passwords do not match"})
+        
+        validate_password(data["password"])
+        return data
+    
+    def create(self, validated_data):
+        validated_data.pop("confirm_password")
+        print(validated_data)
+        return CustomerUser.objects.create_user(**validated_data)
 
 class LoginSerializer(serializers.Serializer):
 
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(max_length=128, write_only=True)
 
-    def validate(self, attrs):
-        username = attrs.get("username")
-        password = attrs.get("password")
+    def validate(self, data):
+        username = data.get("username")
+        password = data.get("password")
 
         if not username or not password:
             raise serializers.ValidationError("Invalid credentials")
 
-        attrs["username"] = username.strip().lower()
-        return attrs
+        data["username"] = username.strip().lower()
+        return data
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

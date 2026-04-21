@@ -135,8 +135,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ORIGIN_ALLOW_ALL = True
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'account.middleware.authentication.CookieJWTAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'account.middleware.authentication.CookieJWTAuthentication',
     ],
     'DEFAULT_THROTTLE_RATES': {
         # Một user chỉ được gọi API có scope logout tối đa 5 lần mỗi phút

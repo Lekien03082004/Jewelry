@@ -3,14 +3,14 @@ from django.conf import settings
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.throttling import UserRateThrottle
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
-
+from rest_framework.permissions import AllowAny
 
 from .models import CustomerUser
 from .serializers import UserSerializer, RegisterSerializer, LoginSerializer
@@ -23,33 +23,27 @@ import ipaddress
 logger = logging.getLogger(__name__)
 
 
-class Register(APIView):
-    def post(self, request):
-        username= request.data.get("username")
-        email= request.data.get("email")
+class Register(CreateAPIView):
+    serializer_class = RegisterSerializer
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         
-        if CustomerUser.objects.filter(username=username).exists():
-            return Response({"error": "Username already exist."}, status=status.HTTP_400_BAD_REQUEST)
-        if CustomerUser.objects.filter(email=email).exists():
-            return Response({"error": "Username already exist."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        serializers = RegisterSerializer(data= request.data)
-        
-        if serializers.is_valid():
-            user = serializers.save()
-
-            return Response({
-                "message": "Register successfully.",
-                "user": {
-                    "first_name": user.first_name,
-                    "last_name": user.last_name,
-                    "email": user.email
-                }
-            },status=status.HTTP_201_CREATED)
-
+        user = serializer.save()
         return Response({
-            "message": "Register faild!",
-        }, status=status.HTTP_400_BAD_REQUEST)
+            "message": "Register successfully",
+            "user": {
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email
+            },
+            },
+            status=status.HTTP_201_CREATED
+        )
+    
 
 class AuthThrottle(UserRateThrottle):
     scope = 'logout'
