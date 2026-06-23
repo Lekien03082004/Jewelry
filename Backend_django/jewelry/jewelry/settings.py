@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'django_filters',
     'account',
     'my_jewelry',
     'cart',
@@ -134,16 +135,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_ALLOW_ALL = True
 REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+        'PAGE_SIZE': 12,
+        
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # 'account.middleware.authentication.CookieJWTAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'account.middleware.authentication.CookieJWTAuthentication',
+        
     ],
     'DEFAULT_THROTTLE_RATES': {
         # Một user chỉ được gọi API có scope logout tối đa 5 lần mỗi phút
         'anon': '100/day',
         'user': '1000/day',
         'logout': '5/minute',  # hoặc tuỳ bạn
-    }
+    },
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'
+    ],
 }
 
 # SECURITY (tắt bớt)
@@ -167,6 +175,8 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 # Custom JWT Cookie Paths
 ACCESS_TOKEN_COOKIE_PATH = '/'
 REFRESH_TOKEN_COOKIE_PATH = '/api/auth/refresh'
+
+JWT_REFRESH_COOKIE = "refresh_token"
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),

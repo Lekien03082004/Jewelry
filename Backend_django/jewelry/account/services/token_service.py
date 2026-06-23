@@ -40,7 +40,8 @@ class TokenService:
     def _is_blacklisted(self, token: RefreshToken) -> bool:
         try:
             return BlacklistedToken.objects.filter(token__jti=token["jti"]).exists()
-        except Exception:
+        except Exception as e:
+            logger.error(f"Blacklist check failed: {e}")
             return False
     
     def _should_rotate(self, token: RefreshToken)->bool:
@@ -63,14 +64,47 @@ class TokenService:
         except Exception as e:
             logger.warning(f"Failed to revoke token: {str(e)}")
             
+    def _revoke_session(self, session_id: str)->None:
+        pass
+    #     if not session_id:
+    #         return
+
+    #     try:
+    #         self.redis.delete(f"session:{session_id}")
+    #     except Exception as e:
+    #         logger.warning(f"Failed to revoke session: {e}")
+         
     def _to_seconds(self, timedelta_obj)->int:
-        
         # Convert timedelta to seconds safely
         if not timedelta_obj:
             return 0
         
         return int(timedelta_obj.total_seconds())
-        
+    
+    def clear_auth_cookie(self, response):
+        cookie_config = {
+            "path": "/",
+            "domain": getattr(settings, "SESSION_COOKIE_DOMAIN", None),
+        }
+
+        response.delete_cookie(
+            key=getattr(settings, "JWT_AUTH_COOKIE", "access_token"),
+            **cookie_config
+        )
+        response.delete_cookie(
+            key=getattr(settings, "JWT_REFRESH_COOKIE", "refresh_token"),
+            **cookie_config
+        )
+
+        csrf_cookie_name = getattr(settings, "CSRF_COOKIE_NAME", None)
+        if csrf_cookie_name:
+            response.delete_cookie(
+                key=csrf_cookie_name,
+                **cookie_config
+            )
+            
+        logger.debug("Auth cookies cleared")
+
     def create_tokens(self, user: "User")->Dict[str, Any]:
         refresh = RefreshToken.for_user(user)
         session_id = self._generate_session_id()
@@ -125,7 +159,42 @@ class TokenService:
             logger.warning(f"Invalid refresh token: {e}")
             raise ValueError("Invalid or expired refresh token.")
 
-
+    def logout(self, refresh_token: Optional[str]):
+    
+        if not refresh_token: 
+            return {"success": False, "message": "No refresh token"}
+        
+        try:
+            token = RefreshToken(refresh_token)
+            
+            # session_id = token.get("session_id")
+            
+            if self._is_blacklisted(token):
+                # Token đã bị blacklist - coi như đã logout thành công
+                return {
+                    "success": True,
+                    "message": "Already logged out"
+                }
+            
+            self._revoke_token(token)
+            
+            # self._revoke_session(session_id=session_id)
+            return {
+                "success": True,
+                "message": "Logout successfully!"
+            }
+            
+        except TokenError as e:
+            # Token không hợp lệ hoặc đã hết hạn
+            logger.warning(f"Invalid token during logout: {e}")
+            return {
+                "success": True,  # Vẫn coi là thành công vì token đã không còn hợp lệ
+                "message": "Token already invalidated"
+            }
+            
+        except Exception as e:
+            logger.error(f"Logout failed: {e}")
+            return {"success": False, "message": "Logout failed!"}
 """
 Nâng cấp
 class TokenService:

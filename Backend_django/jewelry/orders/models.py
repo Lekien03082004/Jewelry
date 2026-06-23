@@ -9,7 +9,7 @@ class Order(models.Model):
         SHIPPED = 'shipped', 'Shipped'
         DELIVERED = 'delivered', 'Delivered'
         CANCELED = 'canceled', 'Canceled'
-    user_id = models.ForeignKey('account.CustomerUser', on_delete=models.CASCADE, related_name="orders")
+    user = models.ForeignKey('account.CustomerUser', on_delete=models.CASCADE, related_name="orders")
     order_code = models.CharField(max_length=20, unique=True)
     total_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_CHOICES.PENDING)
@@ -19,8 +19,8 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
 class OrderItem(models.Model):
-    order_id = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
-    product_id = models.ForeignKey('my_jewelry.Product', on_delete=models.CASCADE, related_name='order_items')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
+    product = models.ForeignKey('my_jewelry.Product', on_delete=models.CASCADE, related_name='order_items')
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=12, decimal_places=2)
     

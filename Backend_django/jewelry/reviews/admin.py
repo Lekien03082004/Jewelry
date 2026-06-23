@@ -4,7 +4,7 @@ from .models import Review
 
 
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('product_id', 'user_id', 'rating', 'comment', 'created_at')
+    list_display = ('product', 'user', 'rating', 'comment', 'created_at')
     list_filter = ('rating',)
     
 admin.site.register(Review, ReviewAdmin)
