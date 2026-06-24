@@ -12,11 +12,15 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+import os
 # from .base import *
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
+# parent là cd ..
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+load_dotenv(BASE_DIR/ ".env")
+print('BASE_DIR', BASE_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -191,3 +195,9 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR/'static'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR/'media'
+
+# Cấu hình vnpay
+VNPAY_TMN_CODE=os.getenv("VNPAY_TMN_CODE")
+VNPAY_HASH_SECRET=os.getenv("VNPAY_HASH_SECRET")
+VNPAY_PAYMENT_URL=os.getenv("VNPAY_PAYMENT_URL")
+VNPAY_RETURN_URL=os.getenv("VNPAY_RETURN_URL")
